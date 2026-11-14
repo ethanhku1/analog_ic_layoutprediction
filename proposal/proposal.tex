@@ -1,0 +1,128 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=0.75in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\titleformat{\section}{\normalsize\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+\urlstyle{same}
+
+\newcommand{\groupsize}{2}
+\newcommand{\groupmembers}{Ethan Ku and Raghav Ramkumar}
+
+\begin{document}
+
+\begin{center}
+    {\large\bfseries Predicting the Effect of Layout on Analog Integrated Circuit Performance}\\[5pt]
+    Group size: \groupsize \qquad \groupmembers
+\end{center}
+
+\section*{Problem Statement}
+
+Analog circuits can behave differently after layout because wires add resistance
+and capacitance. These effects change the circuit's response to different signal
+frequencies. Simulating every possible layout is time-consuming. We will test
+whether machine learning can predict these changes and help choose promising
+layouts. This is challenging because device placement, connections, and electrical
+behavior affect one another~\cite{osiris}.
+
+\section*{Methods}
+
+Ridge regression will provide a linear baseline with regularization to reduce
+overfitting. Kernel ridge regression with an RBF kernel will use similarity
+between examples to fit nonlinear patterns. A small neural network will learn
+interactions between features. These approaches build on regression, kernels,
+and neural networks covered in class.
+
+We will predict each of OSIRIS's three parasitic extraction (PEX) scores, which
+summarize differences between simulated responses before and after layout.
+We will first use device information, including transistor finger counts
+(the number of parallel sections in a transistor). We will then add device
+positions, distances, and symmetry measurements to test whether geometry
+improves predictions.
+
+\section*{Related Work}
+
+OSIRIS supplies labeled layout variants and a layout-optimization
+baseline~\cite{osiris}. ALIGN studies automatic layout generation from circuit
+descriptions~\cite{align}. Dhar et al.\ use SVMs and neural networks to check
+electrical constraints during layout design~\cite{dhar}. We will use existing
+layouts to compare prediction methods and measure how well their scores help
+select a layout.
+
+\section*{Plan of Experiments}
+
+The free OSIRIS repository on Hugging Face contains about 89,000 simulated layout
+variants across five circuit types, including connection files (netlists), layout
+geometry (GDS), and simulation results before and after layout~\cite{dataset}.
+These paired results let us measure the effect of layout. We will use the
+repository's loading example and released code to check data definitions, then
+write our own scripts using Python, scikit-learn, PyTorch, and gdstk.
+We will train separate models for each circuit type, starting with the Miller
+operational transconductance amplifier (OTA).
+
+We will use 70\% training, 15\% validation, and 15\% test data. Within each circuit
+type, all layouts with the same transistor finger counts will stay in one set,
+so related layouts cannot appear in both training and testing.
+Scaling will use training data, and model settings will be chosen using
+validation data. We will compare models with and without geometry against a
+predictor that always returns the training mean. We will report mean absolute
+error (MAE) and root mean square error (RMSE) for each score and circuit type.
+For each test configuration, we will select the layout with the lowest predicted
+score and measure the gap between its actual score and the best available score.
+
+\section*{Project Plan}
+
+Ethan and Raghav will both prepare the data and extract layout features. We will implement
+and train the models together as well. Both will review results and write the report.
+Our milestones are to (1) verify labels and data splits and obtain a ridge
+baseline, (2) add geometry features and train the other models,
+(3) compare prediction errors and layout selection, and (4) analyze errors and
+finish the report.
+Matching layout shapes to circuit devices may be difficult. If necessary, we
+will focus on one OTA type and use simple component positions and distances.
+If kernel training exceeds available memory, we will compare all models on
+the same smaller training set, then expand ridge and neural-network training
+to the full training set.
+
+\newpage
+
+\begin{thebibliography}{9}
+
+\bibitem{osiris}
+G.~Chiari, M.~Piccoli, and D.~Zoni.
+OSIRIS: Bridging Analog Circuit Design and Machine Learning with Scalable
+Dataset Generation.
+\textit{International Conference on Learning Representations}, 2026.
+\href{https://proceedings.iclr.cc/paper_files/paper/2026/hash/9c0be694049f5b6fb35ed9ef12da34b0-Abstract-Conference.html}{Conference paper}.
+
+\bibitem{align}
+K.~Kunal et al.
+ALIGN: Open-Source Analog Layout Automation from the Ground Up.
+\textit{Proceedings of the 56th Annual Design Automation Conference}, 2019.
+\url{https://doi.org/10.1145/3316781.3323471}.
+
+\bibitem{dhar}
+T.~Dhar et al.
+Fast and Efficient Constraint Evaluation of Analog Layout Using Machine
+Learning Models.
+\textit{Proceedings of the 26th Asia and South Pacific Design Automation
+Conference}, pp.~158--163, 2021.
+\url{https://doi.org/10.1145/3394885.3431547}.
+
+\bibitem{dataset}
+Hardware-Fab.
+OSIRIS Dataset and Code.
+Hugging Face, accessed November 5, 2026.
+Dataset, download instructions, loading example, and pipeline code:
+\url{https://huggingface.co/datasets/hardware-fab/osiris}.
+
+\end{thebibliography}
+
+\end{document}
